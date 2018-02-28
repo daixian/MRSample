@@ -1,0 +1,611 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>FSpace</name>
+    </assembly>
+    <members>
+        <member name="T:FSpace.BaseSystem">
+            -------------------------------------------------------------------------------------------------
+             <summary>
+             整个系统的基本坐标，放在世界中心的基本系统。
+             这个系统的底边为倾斜旋转轴，底边坐标为0，最终的坐标结果都在此基础上根据锚点变换而来.
+             </summary>
+            
+             <remarks> Dx, 2018/2/28. </remarks>
+            -------------------------------------------------------------------------------------------------
+        </member>
+        <member name="P:FSpace.BaseSystem.penRay">
+            <summary>
+            笔的射线
+            </summary>
+        </member>
+        <member name="P:FSpace.BaseSystem.penRotation">
+            <summary>
+            当前笔的旋转,其中它自己z轴为正前方.
+            </summary>  
+        </member>
+        <member name="P:FSpace.BaseSystem.penPosition">
+            <summary>
+            当前笔的坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.BaseSystem.penDirection">
+            <summary>
+            笔的射线方向
+            </summary>
+        </member>
+        <member name="P:FSpace.BaseSystem.penMatrix4x4">
+            <summary>
+            当前笔的矩阵
+            </summary>
+        </member>
+        <member name="P:FSpace.BaseSystem.glassPosition">
+            <summary> 
+            当前眼镜的坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.BaseSystem.glassRotation">
+            <summary>
+            当前眼镜的旋转,其中它自己z轴为正前方.
+            </summary> 
+        </member>
+        <member name="P:FSpace.BaseSystem.glassRotation_horizontal">
+            <summary>
+            当前眼镜的旋转限制在水平.
+            </summary> 
+        </member>
+        <member name="P:FSpace.BaseSystem.eyeLeftPosition">
+            <summary>
+            检测系统的左眼坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.BaseSystem.eyeRightPosition">
+            <summary>
+            检测系统的右眼坐标
+            </summary>
+        </member>
+        <member name="F:FSpace.BaseSystem.screenPoint">
+            <summary>
+            屏幕的四个角点的位置坐标
+            </summary>
+        </member>
+        <member name="M:FSpace.BaseSystem.updateScreenPoint">
+            <summary>
+            更新屏幕的四个角
+            </summary>
+        </member>
+        <member name="T:FSpace.Screen4Point">
+            <summary>
+            屏幕的四个角点的位置坐标数据
+            </summary>
+        </member>
+        <member name="F:FSpace.Screen4Point.width">
+            <summary>
+            屏幕宽
+            </summary>
+        </member>
+        <member name="F:FSpace.Screen4Point.height">
+            <summary>
+            屏幕高
+            </summary>
+        </member>
+        <member name="F:FSpace.Screen4Point.slant">
+            <summary>
+            屏幕的倾斜角
+            </summary>
+        </member>
+        <member name="T:FSpace.Camera3D">
+            -------------------------------------------------------------------------------------------------
+             <summary>
+             这是一个临时的3d视觉实现【仅供内部使用】。
+             在这个表示3d眼镜的物体下放三个相机的子节点，分别是中央相机，左眼相机，右眼相机.
+             </summary>
+            
+             <remarks> Dx, 2017/11/2. </remarks>
+            -------------------------------------------------------------------------------------------------
+        </member>
+        <member name="F:FSpace.Camera3D.cam_c">
+            <summary>
+            中央相机，场景中物体命名为"cam_c"
+            </summary>
+        </member>
+        <member name="F:FSpace.Camera3D.cam_l">
+            <summary>
+            中央相机，场景中物体命名为"cam_l"
+            </summary>
+        </member>
+        <member name="F:FSpace.Camera3D.cam_r">
+            <summary>
+            中央相机，场景中物体命名为"cam_r"
+            </summary>
+        </member>
+        <member name="F:FSpace.Camera3D.originalProjection">
+            <summary>
+            原始的投影矩阵
+            </summary>
+        </member>
+        <member name="M:FSpace.Camera3D.setCameraProjMat(UnityEngine.Camera,UnityEngine.Vector3)">
+            -------------------------------------------------------------------------------------------------
+             <summary> 设置相机投影矩阵. </summary>
+            
+             <remarks> Dx, 2017/11/7. </remarks>
+            
+             <param name="cam"> The camera. </param>
+            -------------------------------------------------------------------------------------------------
+        </member>
+        <member name="M:FSpace.DragRecord.#ctor(UnityEngine.Transform,System.Single)">
+            <summary>
+            构造，依赖FCore中的当前笔状态数据
+            </summary>
+            <param name="dragObj">拖拽物体</param>
+        </member>
+        <member name="F:FSpace.DragRecord.dragObj">
+            <summary>
+            拖拽物体
+            </summary>
+        </member>
+        <member name="P:FSpace.DragRecord.distance">
+            <summary>
+            抓取点到笔尖的距离
+            </summary>
+        </member>
+        <member name="M:FSpace.DragRecord.Update">
+            <summary>
+            使用当前的笔状态去更新这个拖拽物体的位置
+            </summary>
+        </member>
+        <member name="T:FSpace.FCore">
+            <summary>
+            整个一体机的主要功能都被放到了这个静态类中
+            </summary>
+        </member>
+        <member name="F:FSpace.FCore.ViewerScale">
+            <summary>
+            由于场景比例很小，所以加入一个这个缩放比例，用来调整笔在U3D的坐标位置的缩放。
+            当笔的移动距离太小无法适应场景的时候，调整这个缩放值更大一些。
+            </summary>
+        </member>
+        <member name="F:FSpace.FCore.anchorRTS">
+            <summary>
+            整个系统的锚点的RTS
+            </summary>
+        </member>
+        <member name="F:FSpace.FCore.anchorRMat">
+            <summary>
+            整个系统锚点的旋转矩阵
+            </summary>
+        </member>
+        <member name="F:FSpace.FCore.anchorRQuat">
+            <summary>
+             整个系统锚点的旋转
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.penRay">
+            <summary>
+            笔的射线
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.penRotation">
+            <summary>
+            当前笔的旋转,其中它自己z轴为正前方.
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.penPosition">
+            <summary>
+            当前笔的坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.penDirection">
+            <summary>
+            笔的射线方向
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.glassPosition">
+            <summary>
+            当前眼镜的坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.glassRotation">
+            <summary>
+            当前眼镜的旋转,其中它自己z轴为正前方.
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.glassRotation_horizontal">
+            <summary>
+            当前眼镜的旋转限制在水平.
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.eyeLeftPosition">
+            <summary>
+            左眼摄像机坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.eyeRightPosition">
+            <summary>
+            右眼摄像机坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.isKey0Down">
+            <summary>
+            是否按键0（中键）按下
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.isKey1Down">
+            <summary>
+            是否按键1（左键）按下
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.isKey2Down">
+            <summary>
+            是否按键2（右键）按下
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.isDraging">
+            <summary>
+             当前是否在正在拖拽状态
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.lastDragDistance">
+            <summary>
+            最后一次拖拽物体的距离
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.addDragObj(UnityEngine.GameObject,System.Single)">
+            <summary>
+            添加一个拖拽物体
+            </summary>
+            <param name="go">要添加的物体</param>
+            <param name="distance">拖拽的碰撞点坐标的距离</param>
+        </member>
+        <member name="M:FSpace.FCore.updateDragObj">
+            <summary>
+            更新所有拖拽物体的位置状态
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.deleteDragObj(UnityEngine.GameObject)">
+            <summary>
+            删除拖拽物体
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.clearDragObj">
+            <summary>
+            清空所有的拖拽物体
+            </summary>
+        </member>
+        <member name="E:FSpace.FCore.EventKey0Down">
+            <summary>
+            按键0按下
+            </summary>
+        </member>
+        <member name="E:FSpace.FCore.EventKey0Up">
+            <summary>
+            按键0抬起
+            </summary>
+        </member>
+        <member name="E:FSpace.FCore.EventKey1Down">
+            <summary>
+            按键1按下
+            </summary>
+        </member>
+        <member name="E:FSpace.FCore.EventKey1Up">
+            <summary>
+            按键1抬起
+            </summary>
+        </member>
+        <member name="E:FSpace.FCore.EventKey2Down">
+            <summary>
+            按键2按下
+            </summary>
+        </member>
+        <member name="E:FSpace.FCore.EventKey2Up">
+            <summary>
+            按键2抬起
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.updateKeyEvent">
+            <summary>
+            用于更新判断发出按键
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.PenShake(System.Int32)">
+            <summary>
+            笔震动
+            </summary>
+            <param name="mode">震动模式</param>
+        </member>
+        <member name="M:FSpace.FCore.SetScreen2D">
+            <summary>
+            设置显示器屏幕为2D
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.SetScreen3D">
+            <summary>
+            设置显示器屏幕为3D
+            </summary>
+        </member>
+        <member name="F:FSpace.FCore.PupilDistance">
+            <summary>
+            瞳距。默认6cm
+            </summary>
+        </member>
+        <member name="F:FSpace.FCore.isAutoSlant">
+            <summary>
+            是否自动设置倾斜。这是一个重要的设置，如果设置了自动倾斜，那么整个系统会和实际一体机和桌面的倾斜角度一致。
+            适用于一些模拟桌面的场合，能让u3d中的桌面一直水平。
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.screenPointLeftTop">
+            <summary>
+            屏幕面-左上角坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.screenPointRightTop">
+            <summary>
+            屏幕面-右上角坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.screenPointLeftBotton">
+            <summary>
+            屏幕面-左下角坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.screenPointRightBotton">
+            <summary>
+            屏幕面-右下角坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.screenCentre">
+            <summary>
+            屏幕面-中心坐标
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.screenRotation">
+            <summary>
+            屏幕面对应的世界旋转
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.slantAngle">
+            <summary>
+            一体机机身的倾斜角
+            </summary>
+        </member>
+        <member name="P:FSpace.FCore.slantRotate">
+            <summary>
+            机身倾斜角所对应旋转变换
+            </summary>
+        </member>
+        <member name="T:FSpace.MRSystem">
+            <summary>
+            这个类能够更新OCV数据，这个脚本的优先级可能要放到最前比较好。同时让它作为整个系统的锚点。当开启了自动倾斜的时候，这个系统以底边
+            </summary>
+        </member>
+        <member name="F:FSpace.MRSystem.isOptDebug">
+            <summary>
+            内部调试，不要设置为true.
+            </summary>
+        </member>
+        <member name="T:FSpace.DetectPoint">
+            -------------------------------------------------------------------------------------------------
+             <summary> 一个检测到的小跟踪点. </summary>
+            
+             <remarks> Xian Dai, 2017/5/6. </remarks>
+            -------------------------------------------------------------------------------------------------
+        </member>
+        <member name="F:FSpace.DetectPoint.targetPoint">
+            <summary> 结果点的坐标. </summary>
+        </member>
+        <member name="F:FSpace.DetectPoint.credibility">
+            <summary> 这个点的可信度，规定如果小于等于0那么就不算检测到. </summary>
+        </member>
+        <member name="F:FSpace.DetectPoint.d">
+            <summary> 距离误差. </summary>
+        </member>
+        <member name="F:FSpace.DetectPoint.direction1">
+            <summary> 四个摄像机看这个点的射线方向. </summary>
+        </member>
+        <member name="F:FSpace.CamRay.credibility">
+            <summary> 这个点的可信度，如果为0则忽略 </summary>
+        </member>
+        <member name="F:FSpace.CamRay.camIndex">
+            <summary> 相机的编号. </summary>
+        </member>
+        <member name="F:FSpace.CamRay.origin">
+            <summary> 射线的原点坐标. </summary>
+        </member>
+        <member name="F:FSpace.CamRay.direction">
+            <summary> 射线的方向. </summary>
+        </member>
+        <member name="T:FSpace.CameraStatus">
+            -------------------------------------------------------------------------------------------------
+             <summary> 监测出来的摄像机状态. </summary>
+            
+             <remarks> Xian Dai, 2017/5/6. </remarks>
+            -------------------------------------------------------------------------------------------------
+        </member>
+        <member name="F:FSpace.CameraStatus.index">
+            <summary>这个相机的序号,目前应该是0-3，一共4个. </summary>
+        </member>
+        <member name="F:FSpace.CameraStatus.status">
+            <summary> 检测状态，1表示成功定位自身，0表示丢失自身，2表示使用手动输入值. </summary>
+        </member>
+        <member name="F:FSpace.CameraStatus.width">
+            <summary> 相机的像素宽度. </summary>
+        </member>
+        <member name="F:FSpace.CameraStatus.height">
+            <summary> 相机的像素高度. </summary>
+        </member>
+        <member name="F:FSpace.CameraStatus.Position">
+            <summary> 自身坐标. </summary>
+        </member>
+        <member name="F:FSpace.CameraStatus.rotation">
+            <summary> 自身旋转. </summary>
+        </member>
+        <member name="F:FSpace.CameraStatus.rotationZXY">
+            <summary> 自身旋转(使用u3d的zxy旋转的欧拉角表示). </summary>
+        </member>
+        <member name="F:FSpace.CameraStatus.ViewFieldDirection1">
+            <summary> 相机的视场方向向量,4个边角点作出. </summary>
+        </member>
+        <member name="M:FSpace.CameraStatus.SetCamera(UnityEngine.Transform)">
+            <summary>
+            根据这个结构体内容来设置摄像机的显示状态，坐标/旋转/是否显示
+            </summary>
+            <param name="cam">要被设置状态的摄像机</param>
+        </member>
+        <member name="T:FSpace.CameraStatusx4">
+            -------------------------------------------------------------------------------------------------
+             <summary> A camera statusx 4. </summary>
+            
+             <remarks> Dx, 2017/7/18. </remarks>
+            -------------------------------------------------------------------------------------------------
+        </member>
+        <member name="T:FSpace.U3DCamera">
+            -------------------------------------------------------------------------------------------------
+             <summary> U3D相机的数据设置. </summary>
+            
+             <remarks> Dx, 2017/11/1. </remarks>
+            -------------------------------------------------------------------------------------------------
+        </member>
+        <member name="F:FSpace.U3DCamera.Position">
+            <summary> 相机的世界坐标. </summary>
+        </member>
+        <member name="F:FSpace.U3DCamera.rotation">
+            <summary> 相机的世界旋转. </summary>
+        </member>
+        <member name="F:FSpace.U3DCamera.fov">
+            <summary> FOV. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.ocvdataSize">
+            <summary> ocv数据结构体的内存大小. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.cam_s">
+            <summary> 4个相机数据. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.GlassStatus">
+            <summary> 眼镜的检测状态. </summary> 
+        </member>
+        <member name="F:FSpace.ocvdata.GlassPosition">
+            <summary> 眼镜坐标. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.GlassPosition_w">
+            <summary> 眼镜坐标(考虑机身倾角). </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.GlassRotation">
+            <summary> 眼镜旋转. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.GlassRotation_w">
+            <summary> 眼镜旋转(考虑机身倾角). </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.PenStatus">
+            <summary>笔的检测状态. </summary> 
+        </member>
+        <member name="F:FSpace.ocvdata.PenPosition">
+            <summary> 笔坐标. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.PenPosition_w">
+            <summary> 笔坐标(考虑机身倾角). </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.PenDirection">
+            <summary> 笔方向. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.PenDirection_w">
+            <summary> 笔方向(考虑机身倾角). </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.PenRoll">
+            <summary> 笔的滚转角. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.DevicePitch">
+            <summary> 整个设备的偏转角度(未使用). </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.PenKey">
+            <summary> 笔的按键值,0x01中键,0x02左键,0x04右键. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.GyroscopeRotation">
+            <summary> 陀螺仪旋转,只有x，y两轴. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.slantAngle">
+            <summary> 整个机子倾斜角，默认为0. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.isSleep">
+            <summary>是否在睡眠状态,0为正常检查,>0为睡眠状态.</summary>
+        </member>
+        <member name="F:FSpace.ocvdata.fps">
+            <summary> 当前处理程序的fps. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.cameraDevErrorCode">
+            <summary> 相机硬件错误标志 </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.penDevErrorCode">
+            <summary> 笔硬件错误标志. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.mcDevErrorCode">
+            <summary> 主控硬件错误标志. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.camera_c">
+            <summary> 16:9摄像机的中央摄像机. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.camera_l">
+            <summary> 16:9摄像机的左边摄像机. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.camera_r">
+            <summary> 16:9摄像机的右边摄像机. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.reliablePoint">
+            <summary> 比较可靠的点 64个. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.points">
+            <summary> 最多128个跟踪点. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.camRays">
+            <summary> 用来调试看效果的摄像机射线. </summary>
+        </member>
+        <member name="F:FSpace.ocvdata.next">
+            <summary> 下一个. </summary>
+        </member>
+        <member name="M:FSpace.OCVData.getIsSleep">
+            <summary>是否在睡眠状态,0为正常检查,大于0为睡眠状态.</summary>
+        </member>
+        <member name="M:FSpace.OCVData.getFps">
+            <summary> 当前处理程序的fps. </summary>
+        </member>
+        <member name="M:FSpace.OCVData.getCameraDevErrorCode">
+            <summary> 相机硬件错误标志 </summary>
+        </member>
+        <member name="M:FSpace.OCVData.getPenDevErrorCode">
+            <summary> 笔硬件错误标志. </summary>
+        </member>
+        <member name="M:FSpace.OCVData.getMCDevErrorCode">
+            <summary> 主控硬件错误标志. </summary>
+        </member>
+        <member name="F:FSpace.OCVData._data">
+            <summary>
+            大家共用的检测数据
+            </summary>
+        </member>
+        <member name="F:FSpace.OCVData.pOCVData">
+            <summary> 
+            数据起始的地址. 
+            </summary>
+        </member>
+        <member name="M:FSpace.OCVData.InitData">
+            <summary>
+            初始化这个数据，在Start()的时候运行一下就ok了
+            </summary>
+        </member>
+        <member name="M:FSpace.OCVData.UpdateOCVdata">
+            <summary>
+            每帧调用，应该在Update中调用
+            </summary>
+        </member>
+        <member name="M:FSpace.OCVData.writeU3Ddata">
+            <summary>
+            写u3d数据到检测程序
+            </summary>
+        </member>
+        <member name="F:FSpace.OCVData.updateCount">
+            <summary>
+            数据更新的计数
+            </summary>
+        </member>
+    </members>
+</doc>

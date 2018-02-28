@@ -10,14 +10,22 @@ namespace FSpace
     public class SimpleDrag : MonoBehaviour
     {
 
+
+        GameObject _penObj;
+
         void Start()
         {
             FCore.EventKey0Down += OnKey0Down;
             FCore.EventKey0Up += OnKey0Up;
 
+            _penObj = new GameObject("penRay");
+            _penObj.AddComponent<PenRay>();
         }
 
-        bool enableShake = true;
+        /// <summary>
+        /// 是否在点击的时候震动一下
+        /// </summary>
+        public bool enableShake = true;
 
         /// <summary>
         /// 记录当前拖拽的物体
