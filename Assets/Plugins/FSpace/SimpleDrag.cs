@@ -21,6 +21,8 @@ namespace FSpace
 
             _penObj = new GameObject("penRay");
             _penObj.AddComponent<PenRay>();
+
+            FCore.isAutoSlant = true;
         }
 
         private void OnApplicationQuit()
