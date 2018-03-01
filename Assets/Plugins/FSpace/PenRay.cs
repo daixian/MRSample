@@ -43,8 +43,8 @@ namespace FSpace
                     _lineRenderer.SetPosition(1, FCore.penPosition + (rayLength * FCore.penDirection.normalized));
                 }
             }
-            _lineRenderer.startWidth = 0.0025f * FCore.ViewerScale;
-            _lineRenderer.endWidth = 0.0025f * FCore.ViewerScale;
+            _lineRenderer.startWidth = 0.0015f * FCore.ViewerScale;
+            _lineRenderer.endWidth = 0.0015f * FCore.ViewerScale;
         }
 
         private void OnDestroy()
