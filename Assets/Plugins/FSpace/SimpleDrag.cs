@@ -9,17 +9,24 @@ namespace FSpace
     /// </summary>
     public class SimpleDrag : MonoBehaviour
     {
-
-
         GameObject _penObj;
 
         void Start()
         {
+            //设置屏幕为3D显示模式
+            FCore.SetScreen3D();
+
             FCore.EventKey0Down += OnKey0Down;
             FCore.EventKey0Up += OnKey0Up;
 
             _penObj = new GameObject("penRay");
             _penObj.AddComponent<PenRay>();
+        }
+
+        private void OnApplicationQuit()
+        {
+            //在程序退出的时候设置屏幕为2D显示
+            FCore.SetScreen2D();
         }
 
         /// <summary>
