@@ -232,17 +232,17 @@
         </member>
         <member name="P:FSpace.FCore.isKey0Down">
             <summary>
-            是否按键0（中键）按下
+            此时是否按键0（左侧键）已经按下
             </summary>
         </member>
         <member name="P:FSpace.FCore.isKey1Down">
             <summary>
-            是否按键1（左键）按下
+            此时是否按键1（靠前键）已经按下
             </summary>
         </member>
         <member name="P:FSpace.FCore.isKey2Down">
             <summary>
-            是否按键2（右键）按下
+            此时是否按键2（靠后键）已经按下
             </summary>
         </member>
         <member name="P:FSpace.FCore.isDraging">
@@ -252,7 +252,7 @@
         </member>
         <member name="P:FSpace.FCore.lastDragDistance">
             <summary>
-            最后一次拖拽物体的距离
+            最后一次拖拽物体到笔尖的距离
             </summary>
         </member>
         <member name="M:FSpace.FCore.addDragObj(UnityEngine.GameObject,System.Single)">
@@ -298,32 +298,32 @@
         </member>
         <member name="E:FSpace.FCore.EventKey0Down">
             <summary>
-            按键0按下
+            事件，按键0按下
             </summary>
         </member>
         <member name="E:FSpace.FCore.EventKey0Up">
             <summary>
-            按键0抬起
+            事件，按键0抬起
             </summary>
         </member>
         <member name="E:FSpace.FCore.EventKey1Down">
             <summary>
-            按键1按下
+            事件，按键1按下
             </summary>
         </member>
         <member name="E:FSpace.FCore.EventKey1Up">
             <summary>
-            按键1抬起
+            事件，按键1抬起
             </summary>
         </member>
         <member name="E:FSpace.FCore.EventKey2Down">
             <summary>
-            按键2按下
+            事件，按键2按下
             </summary>
         </member>
         <member name="E:FSpace.FCore.EventKey2Up">
             <summary>
-            按键2抬起
+            事件，按键2抬起
             </summary>
         </member>
         <member name="M:FSpace.FCore.updateKeyEvent">
