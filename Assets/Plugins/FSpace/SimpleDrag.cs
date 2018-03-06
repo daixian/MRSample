@@ -9,6 +9,10 @@ namespace FSpace
     /// </summary>
     public class SimpleDrag : MonoBehaviour
     {
+
+        /// <summary>
+        /// 创建的笔的射线物体
+        /// </summary>
         GameObject _penObj;
 
         void Start()
@@ -18,11 +22,11 @@ namespace FSpace
 
             FCore.EventKey0Down += OnKey0Down;
             FCore.EventKey0Up += OnKey0Up;
+            FCore.EventKey1Down += OnKey1Down;
+            FCore.EventKey2Down += OnKey2Down;
 
             _penObj = new GameObject("penRay");
             _penObj.AddComponent<PenRay>();
-
-            FCore.isAutoSlant = true;
         }
 
         private void OnApplicationQuit()
@@ -73,6 +77,67 @@ namespace FSpace
         private void OnKey0Up()
         {
             FCore.deleteDragObj(_curDragObj);
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>
+        /// 按键1按下的事件响应.
+        /// </summary>
+        ///
+        /// <remarks> Dx, 2018/3/5. </remarks>
+        ///-------------------------------------------------------------------------------------------------
+        private void OnKey1Down()
+        {
+            if (FCore.isDraging)
+            {
+                FCore.pushDragObj(_curDragObj, 0.10f);
+            }
+        }
+
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary>
+        /// 按键2按下的事件响应.
+        /// </summary>
+        ///
+        /// <remarks> Dx, 2018/3/5. </remarks>
+        ///-------------------------------------------------------------------------------------------------
+        private void OnKey2Down()
+        {
+            if (FCore.isDraging)
+            {
+                FCore.pullDragObj(_curDragObj, 0.10f);
+            }
+        }
+
+        private void OnGUI()
+        {
+            //if (GUI.Button(new Rect(10, 10, 70, 50), "推远"))
+            //{
+            //    if (FCore.isDraging)
+            //    {
+            //        FCore.pushDragObj(_curDragObj, 0.10f);
+            //    }
+            //}
+            //if (GUI.Button(new Rect(10, 10 + 50, 70, 50), "拉近"))
+            //{
+            //    if (FCore.isDraging)
+            //    {
+            //        FCore.pullDragObj(_curDragObj, 0.10f);
+            //    }
+            //}
+        }
+
+        private void Update()
+        {
+            if (FCore.isDraging)
+            {
+                //响应两个按键长按的功能
+                if (FCore.isKey1Down)
+                    FCore.pushDragObj(_curDragObj, 1.50f * Time.deltaTime);
+                if (FCore.isKey2Down)
+                    FCore.pullDragObj(_curDragObj, 1.50f * Time.deltaTime);
+            }
+
         }
 
         ///-------------------------------------------------------------------------------------------------

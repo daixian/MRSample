@@ -144,6 +144,11 @@
             拖拽物体
             </summary>
         </member>
+        <member name="P:FSpace.DragRecord.distanceScale">
+            <summary>
+            距离的缩放控制
+            </summary>
+        </member>
         <member name="P:FSpace.DragRecord.distance">
             <summary>
             抓取点到笔尖的距离
@@ -270,6 +275,25 @@
         <member name="M:FSpace.FCore.clearDragObj">
             <summary>
             清空所有的拖拽物体
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.pullDragObj(UnityEngine.GameObject,System.Single)">
+            <summary>
+            拉近拖拽物体
+            </summary>
+            <param name="obj">拖拽物体</param>
+            <param name="percent">拉近的百分率</param>
+        </member>
+        <member name="M:FSpace.FCore.pushDragObj(UnityEngine.GameObject,System.Single)">
+            <summary>
+            推远拖拽物体
+            </summary>
+            <param name="obj">拖拽物体</param>
+            <param name="percent">推远的百分率</param>
+        </member>
+        <member name="F:FSpace.FCore._dictRotate">
+            <summary>
+            记录所有拖拽物体的字典
             </summary>
         </member>
         <member name="E:FSpace.FCore.EventKey0Down">
