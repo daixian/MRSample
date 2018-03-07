@@ -5,7 +5,9 @@ using UnityEngine;
 namespace FSpace
 {
     /// <summary>
-    /// 简单拖拽的示例
+    /// 简单拖拽的示例，首先在Start()中绑定事件监听操控笔的按下抬起动作。
+    /// 当操控笔按钮0按下的时候，可以开始一个物体的拖拽，在拖拽的时候按动按钮1，按钮2，
+    /// 可以进行拖拽物体的拉近拉远操作。
     /// </summary>
     public class SimpleDrag : MonoBehaviour
     {

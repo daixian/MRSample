@@ -7,12 +7,15 @@ namespace FSpace
     /// </summary>
     internal class PenRay : MonoBehaviour
     {
+        /// <summary>
+        /// 笔的射线的LineRenderer
+        /// </summary>
         private LineRenderer _lineRenderer;
 
         /// <summary>
         /// 射线的最长长度
         /// </summary>
-        private float rayLength;
+        private float MAX_RAY_LENGTH = 1.0f;
 
         private void Awake()
         {
@@ -22,7 +25,8 @@ namespace FSpace
 
         private void Update()
         {
-            rayLength = 1 * FCore.ViewerScale;
+
+            float rayLength = MAX_RAY_LENGTH * FCore.ViewerScale;//射线初始设置长度1m长
 
             _lineRenderer.SetPosition(0, FCore.penPosition);
             if (FCore.isDraging)//如果当前正在拖拽状态
