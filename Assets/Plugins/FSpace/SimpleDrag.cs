@@ -6,7 +6,7 @@ namespace FSpace
 {
     /// <summary>
     /// 简单拖拽的示例，首先在Start()中绑定事件监听操控笔的按下抬起动作。
-    /// 当操控笔按钮0按下的时候，可以开始一个物体的拖拽，在拖拽的时候按动按钮1，按钮2，
+    /// 当操控笔按钮0按下的时候，可以开始一个物体的拖拽，在拖拽的同时时候按动按钮1，按钮2，
     /// 可以进行拖拽物体的拉近拉远操作。
     /// </summary>
     public class SimpleDrag : MonoBehaviour
@@ -17,8 +17,14 @@ namespace FSpace
         /// </summary>
         GameObject _penObj;
 
+        private void Awake()
+        {
+            FCore.ViewerScale = 2;
+        }
+
         void Start()
         {
+
             //设置屏幕为3D显示模式
             FCore.SetScreen3D();
 
@@ -111,22 +117,11 @@ namespace FSpace
             }
         }
 
-        private void OnGUI()
+        private void OnDrawGizmos()
         {
-            //if (GUI.Button(new Rect(10, 10, 70, 50), "推远"))
-            //{
-            //    if (FCore.isDraging)
-            //    {
-            //        FCore.pushDragObj(_curDragObj, 0.10f);
-            //    }
-            //}
-            //if (GUI.Button(new Rect(10, 10 + 50, 70, 50), "拉近"))
-            //{
-            //    if (FCore.isDraging)
-            //    {
-            //        FCore.pullDragObj(_curDragObj, 0.10f);
-            //    }
-            //}
+            //调整整个系统坐标尺度缩放，放大一倍。编辑器中的红框可以看到放大一倍。
+            //这里的设置只是为了编辑器中的显示
+            FCore.ViewerScale = 2;
         }
 
         private void Update()
@@ -156,7 +151,8 @@ namespace FSpace
         private GameObject Raycast(out RaycastHit raycastHit)
         {
             int layer = LayerMask.NameToLayer("Default");
-            if (Physics.Raycast(FCore.penRay, out raycastHit, 10, 1 << layer))
+            float rayLength = FCore.ViewerScale * 1;//规定射线拿取的最大长度为1m，这里可以自由规定
+            if (Physics.Raycast(FCore.penRay, out raycastHit, rayLength, 1 << layer))
             {
                 return raycastHit.collider.gameObject;
             }
