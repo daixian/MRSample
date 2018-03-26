@@ -347,6 +347,26 @@
             设置显示器屏幕为3D
             </summary>
         </member>
+        <member name="M:FSpace.FCore.SetDualScreenExtend">
+            <summary>
+            设置双屏显示为扩展模式
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.SetDualScreenClone">
+            <summary>
+            设置双屏显示为复制模式
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.SetDualScreenStatusBack">
+            <summary>
+            设置双屏显示为恢复上一次操作前状态
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.getCurDualScreenStatus">
+            <summary>
+            得到当前的双屏状态
+            </summary>
+        </member>
         <member name="F:FSpace.FCore.PupilDistance">
             <summary>
             瞳距。默认6cm
@@ -585,6 +605,12 @@
         </member>
         <member name="F:FSpace.ocvdata.next">
             <summary> 下一个. </summary>
+        </member>
+        <member name="M:FSpace.OCVData.getCurDualScreenStatus">
+            <summary>
+            得到当前屏幕的双屏状态，1为扩展，2为克隆
+            </summary>
+            <returns></returns>
         </member>
         <member name="M:FSpace.OCVData.getIsSleep">
             <summary>是否在睡眠状态,0为正常检查,大于0为睡眠状态.</summary>
