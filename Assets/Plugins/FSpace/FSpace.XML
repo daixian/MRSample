@@ -339,22 +339,32 @@
         </member>
         <member name="M:FSpace.FCore.SetScreen2D">
             <summary>
-            设置显示器屏幕为2D
+            设置所有显示器屏幕为2D
             </summary>
         </member>
         <member name="M:FSpace.FCore.SetScreen3D">
             <summary>
-            设置显示器屏幕为3D
+            设置所有显示器屏幕为3D
             </summary>
         </member>
         <member name="M:FSpace.FCore.SetScreen3DSelf">
             <summary>
-            只设置MR一体机显示器屏幕为3D
+            只设置自己的机器,MR一体机显示器屏幕为3D
             </summary>
         </member>
         <member name="M:FSpace.FCore.SetScreen2DSelf">
             <summary>
-            只设置MR一体机显示器屏幕为2D
+            只设置自己的机器,MR一体机显示器屏幕为2D
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.SetScreen3DOther">
+            <summary>
+            切换一体机以外的屏幕进3d
+            </summary>
+        </member>
+        <member name="M:FSpace.FCore.SetScreen2DOther">
+            <summary>
+            切换一体机以外的屏幕进2d
             </summary>
         </member>
         <member name="M:FSpace.FCore.SetDualScreenExtend">
