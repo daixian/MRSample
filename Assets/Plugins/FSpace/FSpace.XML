@@ -133,6 +133,11 @@
              <param name="cam"> The camera. </param>
             -------------------------------------------------------------------------------------------------
         </member>
+        <member name="T:FSpace.DragRecord">
+            <summary>
+            一次拖拽记录的数据类
+            </summary>
+        </member>
         <member name="M:FSpace.DragRecord.#ctor(UnityEngine.Transform,System.Single)">
             <summary>
             构造，依赖FCore中的当前笔状态数据
@@ -144,14 +149,50 @@
             拖拽物体
             </summary>
         </member>
+        <member name="E:FSpace.DragRecord.EventStopDrag">
+            <summary>
+            停止拖拽的事件
+            </summary>
+        </member>
+        <member name="F:FSpace.DragRecord.isCtrlRotation">
+            <summary>
+            是否控制拖拽物体的旋转(未测，不要使用这个功能)
+            </summary>
+        </member>
+        <member name="F:FSpace.DragRecord.isStop">
+            <summary>
+            是否停止拖拽
+            </summary>
+        </member>
         <member name="P:FSpace.DragRecord.distanceScale">
             <summary>
-            距离的缩放控制
+            距离的缩放控制，用于拉远拉近 distance * distanceScale来控制
             </summary>
         </member>
         <member name="P:FSpace.DragRecord.distance">
             <summary>
             抓取点到笔尖的距离
+            </summary>
+        </member>
+        <member name="M:FSpace.DragRecord.SetStopWhenKeyUp(System.Int32)">
+            <summary>
+            设置由哪个按键抬起来终止拖拽，产生Stop Event.
+            key值为0,1,2
+            </summary>
+            <param name="key">按键值0,1,2</param>
+        </member>
+        <member name="M:FSpace.DragRecord.SetStopWhenKeyUp(System.Action{FSpace.DragRecord},System.Int32)">
+            <summary>
+            设置由哪个按键抬起来终止拖拽，产生Stop Event,并且设置回调。
+            key值为0,1,2
+            </summary>
+            <param name="proc"></param>
+            <param name="key">按键值0,1,2</param>
+            <returns></returns>
+        </member>
+        <member name="M:FSpace.DragRecord.OnKeyUp">
+            <summary>
+            响应事件的抬起
             </summary>
         </member>
         <member name="M:FSpace.DragRecord.Update">
@@ -255,12 +296,15 @@
             最后一次拖拽物体到笔尖的距离
             </summary>
         </member>
-        <member name="M:FSpace.FCore.addDragObj(UnityEngine.GameObject,System.Single)">
-            <summary>
-            添加一个拖拽物体
+        <member name="M:FSpace.FCore.addDragObj(UnityEngine.GameObject,System.Single,System.Boolean)">
+            <summary> 
+            添加一个拖拽物体. 
             </summary>
-            <param name="go">要添加的物体</param>
-            <param name="distance">拖拽的碰撞点坐标的距离</param>
+            <param name="go">             要添加的物体. </param>
+            <param name="distance">       拖拽的碰撞点坐标的距离. </param>
+            <param name="isCtrlRotation"> (Optional)是否控制这个拖拽物体的旋转(如果不控制物体旋转，
+                                          那么在中心点和碰撞体中心不一致时会出现物体跑飞) </param>
+            <returns> 返回一个. </returns>
         </member>
         <member name="M:FSpace.FCore.updateDragObj">
             <summary>
@@ -441,6 +485,16 @@
         <member name="T:FSpace.MRSystem">
             <summary>
             这个类能够更新OCV数据，这个脚本的优先级可能要放到最前比较好。同时让它作为整个系统的锚点。当开启了自动倾斜的时候，这个系统以底边
+            </summary>
+        </member>
+        <member name="F:FSpace.MRSystem.isAutoSlant">
+            <summary>
+            是否应用屏幕的自动倾斜
+            </summary>
+        </member>
+        <member name="F:FSpace.MRSystem.ViewerScale">
+            <summary>
+            整个系统的缩放比例
             </summary>
         </member>
         <member name="F:FSpace.MRSystem.isOptDebug">
@@ -650,6 +704,11 @@
         <member name="F:FSpace.OCVData._data">
             <summary>
             大家共用的检测数据
+            </summary>
+        </member>
+        <member name="F:FSpace.OCVData._pData">
+            <summary>
+            pOCVData对应的指针
             </summary>
         </member>
         <member name="F:FSpace.OCVData.pOCVData">
