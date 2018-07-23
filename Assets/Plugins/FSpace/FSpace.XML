@@ -502,6 +502,11 @@
             内部调试，不要设置为true.
             </summary>
         </member>
+        <member name="M:FSpace.MRSystem.UpdateInspector">
+            <summary>
+            响应检视面板改动
+            </summary>
+        </member>
         <member name="T:FSpace.DetectPoint">
             -------------------------------------------------------------------------------------------------
              <summary> 一个检测到的小跟踪点. </summary>
