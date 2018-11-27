@@ -17,11 +17,6 @@ namespace FSpace
         /// </summary>
         GameObject _penObj;
 
-        private void Awake()
-        {
-            FCore.ViewerScale = 2;
-        }
-
         void Start()
         {
 
@@ -117,13 +112,6 @@ namespace FSpace
             }
         }
 
-        private void OnDrawGizmos()
-        {
-            //调整整个系统坐标尺度缩放，放大一倍。编辑器中的红框可以看到放大一倍。
-            //这里的设置只是为了编辑器中的显示
-            FCore.ViewerScale = 2;
-        }
-
         private void Update()
         {
             if (FCore.isDraging)
@@ -151,7 +139,7 @@ namespace FSpace
         private GameObject Raycast(out RaycastHit raycastHit)
         {
             int layer = LayerMask.NameToLayer("Default");
-            float rayLength = FCore.ViewerScale * 1;//规定射线拿取的最大长度为1m，这里可以自由规定
+            float rayLength = FCore.ViewerScale * PenRay.MAX_RAY_LENGTH;//规定射线拿取的最大长度为1m，这里可以自由规定
             if (Physics.Raycast(FCore.penRay, out raycastHit, rayLength, 1 << layer))
             {
                 return raycastHit.collider.gameObject;

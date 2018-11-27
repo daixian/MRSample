@@ -13,9 +13,9 @@ namespace FSpace
         private LineRenderer _lineRenderer;
 
         /// <summary>
-        /// 射线的最长长度
+        /// 射线的最长长度,规定为1m
         /// </summary>
-        private float MAX_RAY_LENGTH = 1.0f;
+        public static float MAX_RAY_LENGTH = 1.0f;
 
         private void Awake()
         {
@@ -47,7 +47,7 @@ namespace FSpace
                     _lineRenderer.SetPosition(1, FCore.penPosition + (rayLength * FCore.penDirection.normalized));
                 }
             }
-            _lineRenderer.startWidth = 0.001f * FCore.ViewerScale;
+            _lineRenderer.startWidth = 0.001f * FCore.ViewerScale;//画出的射线的宽度
             _lineRenderer.endWidth = 0.001f * FCore.ViewerScale;
         }
 
