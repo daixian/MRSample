@@ -4,15 +4,17 @@ using UnityEngine;
 
 namespace GCSeries
 {
-    //World Canvas Follow MRSystem
+    /// <summary>
+    /// 让Canvas的UI适配到MRSystem的红框内，
+    /// 把脚本挂载在Canvas物体。
+    /// </summary>
     public class ForceOnCenter : MonoBehaviour
     {
         void Start()
         {
-            var screenWidth = Vector3.Distance(FCore.screenPointLeftTop, FCore.screenPointRightTop);
-            var screenHight = Vector3.Distance(FCore.screenPointRightTop, FCore.screenPointRightBotton);
-            var scale = screenHight / 1080;
-            transform.localScale = new Vector3(scale, scale, 1);
+            //调整Canvas物体的缩放
+            float scale = FCore.screenHeight / Screen.height;
+            transform.localScale = Vector3.one * scale;
         }
 
         void Update()
