@@ -1,8 +1,9 @@
 /Library
-/Obj
+/[Oo]bj
 /Temp
 /.vs
 /Bin
 /*.csproj
-/*.csproj
 /*.sln
+/Assets/FSpace
+/Assets/FSpace.meta
