@@ -7,23 +7,17 @@ namespace GCSeries
 {
     /// <summary>
     /// 简单拖拽的示例，首先在Start()中绑定事件监听操控笔的按下抬起动作。
-    /// 当操控笔按钮0按下的时候，可以开始一个物体的拖拽，在拖拽的同时时候按动按钮1，按钮2，
-    /// 可以进行拖拽物体的拉近拉远操作。
+    /// 当操控笔按钮1按下的时候，可以开始一个物体的拖拽，
     /// </summary>
     public class SimpleDrag : MonoBehaviour
     {
-
         /// <summary>
         /// 创建的笔的射线物体
         /// </summary>
         GameObject _penObj;
 
-        EventSystem eventSystem;
-        //eventSystem.currentInputModule
-
         void Start()
         {
-            eventSystem = FindObjectOfType<EventSystem>();
             //设置屏幕为3D显示模式
             FCore.SetScreen3D();
 
@@ -52,9 +46,8 @@ namespace GCSeries
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>
-        /// 按键0按下的事件响应.
+        /// 按键1按下的事件响应.
         /// </summary>
-        ///
         /// <remarks> Dx, 2017/9/22. </remarks>
         ///-------------------------------------------------------------------------------------------------
         private void OnKey1Down()
@@ -74,9 +67,8 @@ namespace GCSeries
 
         ///-------------------------------------------------------------------------------------------------
         /// <summary>
-        /// 按键0抬起的事件响应.
+        /// 按键1抬起的事件响应.
         /// </summary>
-        ///
         /// <remarks> Dx, 2017/9/22. </remarks>
         ///-------------------------------------------------------------------------------------------------
         private void OnKey1Up()
@@ -84,20 +76,12 @@ namespace GCSeries
             FCore.deleteDragObj(_curDragObj);
         }
 
-        private void Update()
-        {
-
-        }
-
         ///-------------------------------------------------------------------------------------------------
         /// <summary>
         /// 简单的检测，如果有物体则返回物体，否则返回null.
         /// </summary>
-        ///
         /// <remarks> Dx, 2017/9/22. </remarks>
-        ///
         /// <param name="raycastHit"> [out] The raycast hit. </param>
-        ///
         /// <returns> A GameObject. </returns>
         ///-------------------------------------------------------------------------------------------------
         private GameObject Raycast(out RaycastHit raycastHit)

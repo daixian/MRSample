@@ -18,13 +18,6 @@ namespace GCSeries
         /// </summary>
         public static float MAX_RAY_LENGTH = 1.0f;
 
-        /// <summary>
-        /// 射线点击UI的worldPos
-        /// </summary>
-        private Vector3 wPos;
-
-        private bool hitUIState = false;
-
         private void Awake()
         {
             _lineRenderer = gameObject.AddComponent<LineRenderer>();
