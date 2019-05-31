@@ -27,10 +27,8 @@ namespace GCSeries
             //设置屏幕为3D显示模式
             FCore.SetScreen3D();
 
-            FCore.EventKey0Down += OnKey0Down;
-            FCore.EventKey0Up += OnKey0Up;
             FCore.EventKey1Down += OnKey1Down;
-            FCore.EventKey2Down += OnKey2Down;
+            FCore.EventKey1Up += OnKey1Up;
 
             _penObj = new GameObject("penRay");
             _penObj.AddComponent<PenRay>();
@@ -59,9 +57,8 @@ namespace GCSeries
         ///
         /// <remarks> Dx, 2017/9/22. </remarks>
         ///-------------------------------------------------------------------------------------------------
-        private void OnKey0Down()
+        private void OnKey1Down()
         {
-            
             RaycastHit raycastHit;
             GameObject dragObj = Raycast(out raycastHit);
             if (dragObj != null)
@@ -82,53 +79,13 @@ namespace GCSeries
         ///
         /// <remarks> Dx, 2017/9/22. </remarks>
         ///-------------------------------------------------------------------------------------------------
-        private void OnKey0Up()
+        private void OnKey1Up()
         {
             FCore.deleteDragObj(_curDragObj);
         }
 
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>
-        /// 按键1按下的事件响应.
-        /// </summary>
-        ///
-        /// <remarks> Dx, 2018/3/5. </remarks>
-        ///-------------------------------------------------------------------------------------------------
-        private void OnKey1Down()
-        {
-            if (FCore.isDraging)
-            {
-                FCore.pushDragObj(_curDragObj, 0.10f);
-            }
-        }
-
-        ///-------------------------------------------------------------------------------------------------
-        /// <summary>
-        /// 按键2按下的事件响应.
-        /// </summary>
-        ///
-        /// <remarks> Dx, 2018/3/5. </remarks>
-        ///-------------------------------------------------------------------------------------------------
-        private void OnKey2Down()
-        {
-            if (FCore.isDraging)
-            {
-                FCore.pullDragObj(_curDragObj, 0.10f);
-            }
-        }
-
         private void Update()
         {
-            if (FCore.isDraging)
-            {
-                //响应两个按键长按的功能
-                if (FCore.isKey1Down)
-                    FCore.pushDragObj(_curDragObj, 1.50f * Time.deltaTime);
-                if (FCore.isKey2Down)
-                    FCore.pullDragObj(_curDragObj, 1.50f * Time.deltaTime);
-            }
-
-
             if (Input.GetKeyDown(KeyCode.X))
             {
                 Debug.Log(eventSystem.currentInputModule.GetType().Name);
