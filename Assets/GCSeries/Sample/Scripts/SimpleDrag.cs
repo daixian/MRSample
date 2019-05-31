@@ -86,10 +86,7 @@ namespace GCSeries
 
         private void Update()
         {
-            if (Input.GetKeyDown(KeyCode.X))
-            {
-                Debug.Log(eventSystem.currentInputModule.GetType().Name);
-            }
+
         }
 
         ///-------------------------------------------------------------------------------------------------
