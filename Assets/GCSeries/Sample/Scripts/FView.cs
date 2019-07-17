@@ -92,7 +92,7 @@ namespace GCSeries
             string fViewJsonPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FViewTool", "FView.json");
             if (!File.Exists(fViewJsonPath))
             {
-                UnityEngine.Debug.LogError("FView.OpenFViewWindows():先使用工具软件进行罗技摄像头的标定！");
+                UnityEngine.Debug.LogError("FView.Awake():先使用工具软件进行罗技摄像头的标定！");
                 return;
             }
 

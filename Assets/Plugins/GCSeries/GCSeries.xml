@@ -133,31 +133,6 @@
              <param name="cam"> The camera. </param>
             -------------------------------------------------------------------------------------------------
         </member>
-        <member name="T:GCSeries.CullMesh">
-            <summary>
-            生成一个方形的遮挡面,给FView使用
-            </summary>
-        </member>
-        <member name="F:GCSeries.CullMesh.width">
-            <summary>
-            宽
-            </summary>
-        </member>
-        <member name="F:GCSeries.CullMesh.height">
-            <summary>
-            高
-            </summary>
-        </member>
-        <member name="F:GCSeries.CullMesh.deep">
-            <summary>
-            深
-            </summary>
-        </member>
-        <member name="F:GCSeries.CullMesh.mesh">
-            <summary>
-            遮挡面的mesh
-            </summary>
-        </member>
         <member name="T:GCSeries.DragRecord">
             <summary>
             一次拖拽记录的数据类
