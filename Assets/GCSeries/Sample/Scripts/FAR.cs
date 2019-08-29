@@ -1,6 +1,6 @@
-﻿using System;
+﻿using FSpace;
+using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,27 +10,14 @@ using System.Threading.Tasks;
 
 namespace GCSeries
 {
-
-    public class FView : MonoBehaviour
+    public class FAR : MonoBehaviour
     {
-        #region extern fun
-        [DllImport("FView")]
-        private static extern void fmFViewStart(System.IntPtr hWnd, System.IntPtr textureHandle, int w, int h);
-
-        [DllImport("FView")]
-        private static extern void fmFViewStop();
-
-        [DllImport("FView")]
+        [DllImport("f-ar")]
         private static extern int fmFViewReadJson();
-
-
-        [DllImport("FView")]
+        [DllImport("f-ar")]
         private static extern void fmFViewGetPosition(IntPtr value);
-
-        [DllImport("FView")]
+        [DllImport("f-ar")]
         private static extern void fmFViewGetRotation(IntPtr value);
-
-
         //寻找当前目标窗口的进程
         [DllImport("user32.dll")]
         private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -38,8 +25,6 @@ namespace GCSeries
         //根据窗口句柄获取pid
         [DllImport("User32.dll")]
         private static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
-
-        #endregion
 
         /// <summary>
         /// 相机采图
@@ -52,19 +37,14 @@ namespace GCSeries
         public RawImage riC920;
 
         /// <summary>
-        /// 渲染结果纹理
+        /// 渲染结果相机
         /// </summary>
-        public RenderTexture rt;
-
-        /// <summary>
-        /// 渲染纹理指针
-        /// </summary>
-        private IntPtr rtPtr = IntPtr.Zero;
+        public Camera ARcam;
 
         /// <summary>
         /// 显示窗口句柄
         /// </summary>
-        IntPtr _hWndViewClient = IntPtr.Zero;
+        IntPtr _hViewClient = IntPtr.Zero;
 
         /// <summary>
         /// 显示窗口进程
@@ -81,14 +61,9 @@ namespace GCSeries
         /// </summary>
         Quaternion viewRotation;
 
-        /// <summary>
-        /// 是否自动启动FView窗口,调试用
-        /// </summary>
-        public bool isAutoStartViewWin = true;
 
-        void Awake()
+        private void Awake()
         {
-            //这里仅仅只是检查一下是否有标定过(标定工具软件路径  C:\Program Files\MRSystem\FViewTool.exe)
             string fViewJsonPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "FViewTool", "FView.json");
             if (!File.Exists(fViewJsonPath))
             {
@@ -112,104 +87,61 @@ namespace GCSeries
                 viewRotation = (Quaternion)Marshal.PtrToStructure(structPtr, typeof(Quaternion));
                 Marshal.FreeHGlobal(structPtr);
             }
-        }
-
-        async void Start()
-        {
-            //打开相机
-            StartCoroutine(InitCamera());
-
-            //过3秒之后启动窗口(可以注释掉)
-            if (isAutoStartViewWin)
-            {
-                await Task.Delay(3000);
-                OpenFViewWindows();
-            }
-        }
-
-        // Update is called once per frame
-        void Update()
-        {
-            //如果按下了V键就打开窗口
-            if (Input.GetKeyDown(KeyCode.V))
-            {
-                OpenFViewWindows();
-            }
-
             //使用标定结果设置CamRoot的坐标(注意坐标需要缩放)
             transform.localPosition = viewPosition * FCore.ViewerScale;
             transform.localRotation = viewRotation;
-
-            IntPtr curRtPtr = rt.GetNativeTexturePtr();
-            if (curRtPtr != rtPtr && _hWndViewClient != IntPtr.Zero)
-            {
-                UnityEngine.Debug.Log("FView.Update():rtPtr值更新！");
-                rtPtr = curRtPtr;
-                fmFViewStart(_hWndViewClient, rtPtr, 1920, 1080);
-            }
+            //创建一个新的渲染目标纹理并绑定到ARcam
+            RenderTexture temp_RT = new RenderTexture((int)Screen.width, (int)Screen.height, 0);
+            ARcam.targetTexture = temp_RT;
         }
-        void OnApplicationQuit()
+
+        // Use this for initialization
+        async void Start()
         {
-            CloseFViewWindows();
+            StartCoroutine(InitCamera());
+            await Task.Delay(3000);
+
+            OpenFARWindows();
         }
 
-        /// <summary>
-        /// 启动FView窗口
-        /// </summary>
-        public void OpenFViewWindows()
+        private void OpenFARWindows()
         {
             if (viewProcess != null)
             {
-                UnityEngine.Debug.Log("FView.OpenFViewWindows():当前已经启动了一个fview窗口！");
                 return;
             }
-
+            string _path = Path.Combine(Application.streamingAssetsPath, "ClientWin.exe");
             ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.FileName = Path.Combine(Application.streamingAssetsPath, "ClientWin.exe"); ;
+            startInfo.FileName = _path;
             viewProcess = new Process();
             viewProcess.StartInfo = startInfo;
             viewProcess.Start();
 
-            _hWndViewClient = IntPtr.Zero;
+            _hViewClient = IntPtr.Zero;
             while (true)
             {
-                _hWndViewClient = FindWindow(null, "ViewClient");
-                if (_hWndViewClient != IntPtr.Zero)
+                _hViewClient = FindWindow(null, "ViewClient");
+                if (_hViewClient != IntPtr.Zero)
                 {
-                    UnityEngine.Debug.Log("FView.OpenFViewWindows():找到了窗口句柄！");
+                    UnityEngine.Debug.Log("FAR.OpenFARWindows():找到了窗口句柄！");
                     int pid = 0;
-                    GetWindowThreadProcessId(_hWndViewClient, out pid);
+                    GetWindowThreadProcessId(_hViewClient, out pid);
                     if (pid == viewProcess.Id)
                     {
+                        //设置当前的色彩空间，u3d默认是Gama空间
+                        FARSingleton.GetInstance().SetColorSpace(FARSingleton.U3DColorSpace.Gama);
+                        //开始绘制同屏窗口，如目标纹理指针变更可随时调用
+                        FARSingleton.GetInstance().StartView(_hViewClient, ARcam.targetTexture.GetNativeTexturePtr());
                         break;
                     }
                 }
             }
-
-            UnityEngine.Debug.Log("FView.OpenFViewWindows():开始绘图！");
-
+            UnityEngine.Debug.Log("FAR.OpenFARWindows():开始绘图！");
         }
 
-        /// <summary>
-        /// 关闭FView的窗口
-        /// </summary>
-        public void CloseFViewWindows()
+        private void OnApplicationQuit()
         {
-            if (viewProcess != null)
-            {
-                try
-                {
-                    viewProcess.Kill();
-
-                }
-                catch (Exception)
-                {
-                }
-                finally
-                {
-                    viewProcess = null;
-                }
-            }
+            FARSingleton.GetInstance().CloseDown();
         }
 
         /// <summary>
@@ -218,7 +150,6 @@ namespace GCSeries
         /// <returns></returns>
         IEnumerator InitCamera()
         {
-
             //获取授权
             yield return Application.RequestUserAuthorization(UserAuthorization.WebCam);
             if (Application.HasUserAuthorization(UserAuthorization.WebCam))
@@ -237,7 +168,7 @@ namespace GCSeries
                     }
                     if (string.IsNullOrEmpty(_deviceName))
                     {
-                        UnityEngine.Debug.LogError("FView.InitCamera():相机启动失败，没有外接相机");
+                        UnityEngine.Debug.LogError("ScreenControlObj.InitCamera():相机启动失败，没有外接相机");
                     }
                     else
                     {
@@ -253,7 +184,7 @@ namespace GCSeries
                             _camTex.Play();
                         }
                         //_tex.anisoLevel = 2;
-                        UnityEngine.Debug.Log("FView.InitCamera():相机启动");
+                        UnityEngine.Debug.Log("ScreenControlObj.InitCamera():相机启动");
                     }
                 }
             }
@@ -291,5 +222,4 @@ namespace GCSeries
             }
         }
     }
-
 }

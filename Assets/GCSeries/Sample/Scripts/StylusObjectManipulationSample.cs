@@ -20,7 +20,7 @@ namespace GCSeries
             _stylusBeamObject = new GameObject("StylusBeam");
             _stylusBeamRenderer = _stylusBeamObject.AddComponent<LineRenderer>();
             _stylusBeamRenderer.material = new Material(Shader.Find("Transparent/Diffuse"));
-            _stylusBeamRenderer.SetColors(Color.white, Color.white);
+            _stylusBeamRenderer.startColor = Color.white;
         }
 
         void Update()
@@ -114,7 +114,7 @@ namespace GCSeries
             {
                 float stylusBeamWidth  = DEFAULT_STYLUS_BEAM_WIDTH * FCore.ViewerScale;
                 float stylusBeamLength = _stylusBeamLength * FCore.ViewerScale;
-                _stylusBeamRenderer.SetWidth(0.002f, 0.002f);
+                _stylusBeamRenderer.startWidth = 0.002f;
                 //_stylusBeamRenderer.SetWidth(stylusBeamWidth, stylusBeamWidth);
                 _stylusBeamRenderer.SetPosition(0, stylusPosition);
                 _stylusBeamRenderer.SetPosition(1, stylusPosition + (stylusDirection * stylusBeamLength));

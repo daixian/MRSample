@@ -16,11 +16,7 @@ public class ShowFPS : MonoBehaviour
         //Application.targetFrameRate=60;
         GameObject.DontDestroyOnLoad(this);
         f_LastInterval = Time.realtimeSinceStartup;
-
         i_Frames = 0;
-
-        //设置vsync不使能
-        QualitySettings.vSyncCount = 0;
     }
 
     void OnGUI()
