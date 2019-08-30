@@ -91,7 +91,7 @@ namespace GCSeries
             transform.localPosition = viewPosition * FCore.ViewerScale;
             transform.localRotation = viewRotation;
             //创建一个新的渲染目标纹理并绑定到ARcam
-            RenderTexture temp_RT = new RenderTexture((int)Screen.width, (int)Screen.height, 0);
+            RenderTexture temp_RT = new RenderTexture((int)FARSingleton.SwapchainWidth, (int)FARSingleton.SwapchanHeight, 0);
             ARcam.targetTexture = temp_RT;
         }
 
