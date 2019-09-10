@@ -12,12 +12,7 @@ namespace GCSeries
 {
     public class FAR : MonoBehaviour
     {
-        [DllImport("f-ar")]
-        private static extern int fmFViewReadJson();
-        [DllImport("f-ar")]
-        private static extern void fmFViewGetPosition(IntPtr value);
-        [DllImport("f-ar")]
-        private static extern void fmFViewGetRotation(IntPtr value);
+
         //寻找当前目标窗口的进程
         [DllImport("user32.dll")]
         private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -25,6 +20,14 @@ namespace GCSeries
         //根据窗口句柄获取pid
         [DllImport("User32.dll")]
         private static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
+        [DllImport("user32.dll", SetLastError = true)]
+        public static extern long SetWindowPos(IntPtr hwnd, long hWndInsertAfter, long x, long y, long cx, long cy, long wFlags);
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetWindowLongPtrA(IntPtr hwnd, int _nIndex, int dwNewLong);
+        [DllImport("user32.dll")]
+        public static extern IntPtr SetWindowLong(IntPtr hwnd, int _nIndex, int dwNewLong);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int MoveWindow(IntPtr hWnd, int x, int y, int nWidth, int nHeight, bool BRePaint);
 
         /// <summary>
         /// 相机采图
@@ -71,19 +74,19 @@ namespace GCSeries
                 return;
             }
 
-            if (fmFViewReadJson() == 0)//读取json成功
+            if (FARSingleton.fmFViewReadJson() == 0)//读取json成功
             {
                 //读坐标viewPosition
                 int size = Marshal.SizeOf(viewPosition);
                 IntPtr structPtr = Marshal.AllocHGlobal(size);
-                fmFViewGetPosition(structPtr);
+                FARSingleton.fmFViewGetPosition(structPtr);
                 viewPosition = (Vector3)Marshal.PtrToStructure(structPtr, typeof(Vector3));
                 Marshal.FreeHGlobal(structPtr);
 
                 //读旋转viewRotation
                 size = Marshal.SizeOf(viewRotation);
                 structPtr = Marshal.AllocHGlobal(size);
-                fmFViewGetRotation(structPtr);
+                FARSingleton.fmFViewGetRotation(structPtr);
                 viewRotation = (Quaternion)Marshal.PtrToStructure(structPtr, typeof(Quaternion));
                 Marshal.FreeHGlobal(structPtr);
             }
@@ -101,14 +104,52 @@ namespace GCSeries
             StartCoroutine(InitCamera());
             await Task.Delay(3000);
 
-            OpenFARWindows();
+            StartCoroutine(OpenFARWindows());
         }
 
-        private void OpenFARWindows()
+        const uint SWP_SHOWWINDOW = 0x0001;//全屏
+        const int GWL_STYLE = -16;//无边框
+        const int WS_POPUP = 0x800000;
+        public void UpdateWindowPos(IntPtr ProjectionWindow)
         {
-            if (viewProcess != null)
+            //可先切换到扩展模式
+            //SetDisplayConfig(0, IntPtr.Zero, 0, IntPtr.Zero, (SDC_APPLY | SDC_TOPOLOGY_EXTEND));
+            //更新物理显示器列表
+            int temp_MonitorCount = FARSingleton.fmARUpdatePhysicalMonitor();
+            if (temp_MonitorCount < 0)
+                throw new Exception("fmARUpdatePhysicalMonitor failed with error :" + temp_MonitorCount);
+
+            if (temp_MonitorCount != 2)
+                throw new Exception("Current monitor count : " + temp_MonitorCount);
+
+            for (int k = 0; k < temp_MonitorCount; k++)
             {
-                return;
+                FARSingleton.GCinfo gcinfo = new FARSingleton.GCinfo();
+                int result = FARSingleton.fmARGetMonitorInfoByIndex(ref gcinfo, k);
+                if (result >= 0)
+                {
+                    if (!gcinfo.isGCmonitor)
+                    {
+                        UnityEngine.Debug.Log("FARSingleton.fmARGetMonitorInfoByIndex()：投屏显示器：" + gcinfo.DeviceName);
+                        if (IntPtr.Size.Equals(8))
+                            SetWindowLongPtrA(ProjectionWindow, GWL_STYLE, WS_POPUP);
+                        else
+                            SetWindowLong(ProjectionWindow, GWL_STYLE, WS_POPUP);
+                        MoveWindow(ProjectionWindow, gcinfo.RCleft, gcinfo.RCtop, gcinfo.RCright - gcinfo.RCleft, gcinfo.RCbottom - gcinfo.RCtop, false);
+                    }
+                }
+                else
+                    throw new Exception("fmARGetMonitorInfoByIndex failed with error :" + result);
+            }
+        }
+
+        private IEnumerator OpenFARWindows()
+        {
+            //等待下一帧开始
+            yield return new WaitForEndOfFrame();
+            if (FindWindow(null, "ViewClient") != IntPtr.Zero)
+            {
+                yield break;
             }
             string _path = Path.Combine(Application.streamingAssetsPath, "ClientWin.exe");
             ProcessStartInfo startInfo = new ProcessStartInfo();
@@ -124,6 +165,8 @@ namespace GCSeries
                 if (_hViewClient != IntPtr.Zero)
                 {
                     UnityEngine.Debug.Log("FAR.OpenFARWindows():找到了窗口句柄！");
+                    //全屏到非GC显示器
+                    UpdateWindowPos(_hViewClient);
                     int pid = 0;
                     GetWindowThreadProcessId(_hViewClient, out pid);
                     if (pid == viewProcess.Id)

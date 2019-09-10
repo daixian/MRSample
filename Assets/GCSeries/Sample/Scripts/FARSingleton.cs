@@ -15,6 +15,32 @@ namespace FSpace
         [DllImport("f-ar")]
         private static extern void fmARStopView();
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct GCinfo
+        {
+            public bool isGCmonitor;
+            public int RCleft;
+            public int RCright;
+            public int RCtop;
+            public int RCbottom;
+            [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 18)]
+            public string DeviceName;
+        };
+        [DllImport("f-ar")]
+        public static extern int fmARUpdatePhysicalMonitor();
+        [DllImport("f-ar")]
+        public static extern int fmARGetMonitorCount();
+        [DllImport("f-ar")]
+        public static extern int fmARGetMonitorInfoByIndex(ref GCinfo out_struct, int index);
+
+
+        [DllImport("f-ar")]
+        public static extern int fmFViewReadJson();
+        [DllImport("f-ar")]
+        public static extern void fmFViewGetPosition(IntPtr value);
+        [DllImport("f-ar")]
+        public static extern void fmFViewGetRotation(IntPtr value);
+
         public static FARSingleton GetInstance()
         {
             if (m_fviewInstance == null) m_fviewInstance = new FARSingleton();
@@ -95,6 +121,8 @@ namespace FSpace
         {
             fmARStopView();
         }
+
+       
 
         public const int SwapchainWidth = 1920;
         public const int SwapchanHeight = 1080;
