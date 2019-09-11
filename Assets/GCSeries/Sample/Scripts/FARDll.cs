@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-namespace FSpace
+namespace GCSeries
 {
-    public class FARSingleton//为了可切换场景，封装一个全局类
+    public static class FARDll//为了可切换场景，封装一个全局类
     {
         [DllImport("f-ar")]
-        private static extern int fmARStartViewDX11(System.IntPtr hWnd, System.IntPtr textureHandle, int w, int h);
-        [DllImport("f-ar")]
-        private static extern int fmARStartView_LRDX11(System.IntPtr hWnd, System.IntPtr LeftTextureHandle, System.IntPtr ReftTextureHandle, int w, int h);
+        private static extern int fmARStartViewDX11(System.IntPtr hWnd, System.IntPtr leftNativePTR, System.IntPtr rightNativePTR, int w, int h);
         [DllImport("f-ar")]
         private static extern void fmARSwitchProjector(int type);
         [DllImport("f-ar")]
@@ -26,14 +24,39 @@ namespace FSpace
             [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 18)]
             public string DeviceName;
         };
+        // 通过EDID获取屏幕信息
+        // 返回屏幕坐标列表
+
+        //更新物理显示器列表
+        //return int
+        //  result >= 0 返回当前屏幕个数
+        //  result = -1 获取驱动失败
+        //  result = -2 读取EDID失败
         [DllImport("f-ar")]
         public static extern int fmARUpdatePhysicalMonitor();
+        //返回缓存中所有显示器数量
+        //return int
         [DllImport("f-ar")]
         public static extern int fmARGetMonitorCount();
+        //输入index返回GCinfo数据
+        //GCinfo* out_struct需要在外部创建内存
+        //return int
+        //  result =  1 数据获取成功
+        //  result = -1 out_struct为空指针
+        //  result = -2 index越界
         [DllImport("f-ar")]
         public static extern int fmARGetMonitorInfoByIndex(ref GCinfo out_struct, int index);
 
-
+        ///-------------------------------------------------------------------------------------------------
+        /// <summary> 独一个json文件路径. </summary>
+        ///
+        /// <remarks> Dx, 2019/5/31. </remarks>
+        ///
+        /// <param name="fviewFile"> [in,out] If non-null, the
+        ///                          fview file. </param>
+        ///
+        /// <returns> An int. </returns>
+        ///-------------------------------------------------------------------------------------------------
         [DllImport("f-ar")]
         public static extern int fmFViewReadJson();
         [DllImport("f-ar")]
@@ -41,11 +64,17 @@ namespace FSpace
         [DllImport("f-ar")]
         public static extern void fmFViewGetRotation(IntPtr value);
 
-        public static FARSingleton GetInstance()
-        {
-            if (m_fviewInstance == null) m_fviewInstance = new FARSingleton();
-            return m_fviewInstance;
-        }
+
+        //寻找当前目标窗口的进程
+        [DllImport("user32.dll")]
+        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+        //根据窗口句柄获取pid
+        [DllImport("User32.dll")]
+        public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
+        [DllImport("user32.dll", CharSet = CharSet.Auto)]
+        public static extern int MoveWindow(IntPtr hWnd, int x, int y, int nWidth, int nHeight, bool BRePaint);
+
         public enum U3DColorSpace
         {
             Gama = 0,
@@ -59,35 +88,22 @@ namespace FSpace
         /// <summary>
         /// 输入 
         /// hWnd                 创建好的窗口句柄
-        /// FullNativePTR    单个全屏的纹理指针
-        /// 返回错误代码
-        /// errorCode >0 成功
-        /// errorCode ==-2 窗口句柄丢失
-        /// errorCode ==-3 纹理句柄丢失
-        /// </summary>
-        public int StartView(IntPtr hWnd, IntPtr FullNativePTR)
-        {
-            errorCode = fmARStartViewDX11(hWnd, FullNativePTR, SwapchainWidth, SwapchanHeight);
-            return errorCode;
-        }
-
-        /// <summary>
-        /// 输入 
-        /// hWnd                  创建好的窗口句柄
         /// leftNativePTR      半屏的左眼纹理指针
-        ///  rightNativePTR    半屏的右眼纹理指针
+        /// rightNativePTR    半屏的右眼纹理指针，此参数为空代表2D投屏
         /// 返回错误代码
         /// errorCode >0 成功
         /// errorCode ==-2 窗口句柄丢失
         /// errorCode ==-3 纹理句柄丢失
         /// </summary>
-        public int StartView_LR(IntPtr hWnd, IntPtr leftNativePTR, IntPtr rightNativePTR)
+        public static int StartView(IntPtr hWnd, IntPtr leftNativePTR, IntPtr rightNativePTR)
         {
-            errorCode = fmARStartView_LRDX11(hWnd, leftNativePTR, rightNativePTR, SwapchainWidth, SwapchanHeight);
+            errorCode = fmARStartViewDX11(hWnd, leftNativePTR, rightNativePTR, SwapchainWidth, SwapchanHeight);
             return errorCode;
         }
-
-        public void SetColorSpace(U3DColorSpace cSpace)
+        /// <summary>
+        /// 设置当前的色彩空间，u3d默认是Gama空间
+        /// </summary>
+        public static void SetColorSpace(U3DColorSpace cSpace)
         {
 #if UNITY_EDITOR
             if (UnityEditor.PlayerSettings.colorSpace == UnityEngine.ColorSpace.Linear)
@@ -109,7 +125,7 @@ namespace FSpace
         /// -----------         ---------- 
         ///如果只调用StartView(...)，则此函数无效 
         /// </summary>
-        public void SwitchProjector(ProjectorType type)
+        public static void SwitchProjector(ProjectorType type)
         {
             fmARSwitchProjector((int)type);
         }
@@ -117,18 +133,15 @@ namespace FSpace
         /// <summary>
         ///安全关闭窗口
         /// </summary>
-        public void CloseDown()
+        public static void CloseDown()
         {
             fmARStopView();
         }
 
-       
+
 
         public const int SwapchainWidth = 1920;
         public const int SwapchanHeight = 1080;
-        private int errorCode = 0;
-        private FARSingleton() { }
-        ~FARSingleton() { fmARStopView(); }
-        private static FARSingleton m_fviewInstance;
+        private static int errorCode = 0;
     }
 }

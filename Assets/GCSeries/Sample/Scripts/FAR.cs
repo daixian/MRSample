@@ -1,5 +1,4 @@
-﻿using FSpace;
-using System;
+﻿using System;
 using System.Collections;
 using System.IO;
 using UnityEngine;
@@ -40,21 +39,6 @@ namespace GCSeries
         public RawImage riC920;
 
         /// <summary>
-        /// 渲染结果相机
-        /// </summary>
-        public Camera ARcam;
-
-        /// <summary>
-        /// 显示窗口句柄
-        /// </summary>
-        IntPtr _hViewClient = IntPtr.Zero;
-
-        /// <summary>
-        /// 显示窗口进程
-        /// </summary>
-        Process viewProcess;
-
-        /// <summary>
         /// 一个罗技摄像头姿态的记录
         /// </summary>
         Vector3 viewPosition;
@@ -74,28 +58,25 @@ namespace GCSeries
                 return;
             }
 
-            if (FARSingleton.fmFViewReadJson() == 0)//读取json成功
+            if (FARDll.fmFViewReadJson() == 0)//读取json成功
             {
                 //读坐标viewPosition
                 int size = Marshal.SizeOf(viewPosition);
                 IntPtr structPtr = Marshal.AllocHGlobal(size);
-                FARSingleton.fmFViewGetPosition(structPtr);
+                FARDll.fmFViewGetPosition(structPtr);
                 viewPosition = (Vector3)Marshal.PtrToStructure(structPtr, typeof(Vector3));
                 Marshal.FreeHGlobal(structPtr);
 
                 //读旋转viewRotation
                 size = Marshal.SizeOf(viewRotation);
                 structPtr = Marshal.AllocHGlobal(size);
-                FARSingleton.fmFViewGetRotation(structPtr);
+                FARDll.fmFViewGetRotation(structPtr);
                 viewRotation = (Quaternion)Marshal.PtrToStructure(structPtr, typeof(Quaternion));
                 Marshal.FreeHGlobal(structPtr);
             }
             //使用标定结果设置CamRoot的坐标(注意坐标需要缩放)
             transform.localPosition = viewPosition * FCore.ViewerScale;
-            transform.localRotation = viewRotation;
-            //创建一个新的渲染目标纹理并绑定到ARcam
-            RenderTexture temp_RT = new RenderTexture((int)FARSingleton.SwapchainWidth, (int)FARSingleton.SwapchanHeight, 0);
-            ARcam.targetTexture = temp_RT;
+            transform.localRotation = viewRotation;           
         }
 
         // Use this for initialization
@@ -103,88 +84,6 @@ namespace GCSeries
         {
             StartCoroutine(InitCamera());
             await Task.Delay(3000);
-
-            StartCoroutine(OpenFARWindows());
-        }
-
-        const uint SWP_SHOWWINDOW = 0x0001;//全屏
-        const int GWL_STYLE = -16;//无边框
-        const int WS_POPUP = 0x800000;
-        public void UpdateWindowPos(IntPtr ProjectionWindow)
-        {
-            //可先切换到扩展模式
-            //SetDisplayConfig(0, IntPtr.Zero, 0, IntPtr.Zero, (SDC_APPLY | SDC_TOPOLOGY_EXTEND));
-            //更新物理显示器列表
-            int temp_MonitorCount = FARSingleton.fmARUpdatePhysicalMonitor();
-            if (temp_MonitorCount < 0)
-                throw new Exception("fmARUpdatePhysicalMonitor failed with error :" + temp_MonitorCount);
-
-            if (temp_MonitorCount != 2)
-                throw new Exception("Current monitor count : " + temp_MonitorCount);
-
-            for (int k = 0; k < temp_MonitorCount; k++)
-            {
-                FARSingleton.GCinfo gcinfo = new FARSingleton.GCinfo();
-                int result = FARSingleton.fmARGetMonitorInfoByIndex(ref gcinfo, k);
-                if (result >= 0)
-                {
-                    if (!gcinfo.isGCmonitor)
-                    {
-                        UnityEngine.Debug.Log("FARSingleton.fmARGetMonitorInfoByIndex()：投屏显示器：" + gcinfo.DeviceName);
-                        if (IntPtr.Size.Equals(8))
-                            SetWindowLongPtrA(ProjectionWindow, GWL_STYLE, WS_POPUP);
-                        else
-                            SetWindowLong(ProjectionWindow, GWL_STYLE, WS_POPUP);
-                        MoveWindow(ProjectionWindow, gcinfo.RCleft, gcinfo.RCtop, gcinfo.RCright - gcinfo.RCleft, gcinfo.RCbottom - gcinfo.RCtop, false);
-                    }
-                }
-                else
-                    throw new Exception("fmARGetMonitorInfoByIndex failed with error :" + result);
-            }
-        }
-
-        private IEnumerator OpenFARWindows()
-        {
-            //等待下一帧开始
-            yield return new WaitForEndOfFrame();
-            if (FindWindow(null, "ViewClient") != IntPtr.Zero)
-            {
-                yield break;
-            }
-            string _path = Path.Combine(Application.streamingAssetsPath, "ClientWin.exe");
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.FileName = _path;
-            viewProcess = new Process();
-            viewProcess.StartInfo = startInfo;
-            viewProcess.Start();
-
-            _hViewClient = IntPtr.Zero;
-            while (true)
-            {
-                _hViewClient = FindWindow(null, "ViewClient");
-                if (_hViewClient != IntPtr.Zero)
-                {
-                    UnityEngine.Debug.Log("FAR.OpenFARWindows():找到了窗口句柄！");
-                    //全屏到非GC显示器
-                    UpdateWindowPos(_hViewClient);
-                    int pid = 0;
-                    GetWindowThreadProcessId(_hViewClient, out pid);
-                    if (pid == viewProcess.Id)
-                    {
-                        //设置当前的色彩空间，u3d默认是Gama空间
-                        FARSingleton.GetInstance().SetColorSpace(FARSingleton.U3DColorSpace.Gama);
-                        //开始绘制同屏窗口，如目标纹理指针变更可随时调用
-                        FARSingleton.GetInstance().StartView(_hViewClient, ARcam.targetTexture.GetNativeTexturePtr());
-                        break;
-                    }
-                }
-            }
-            UnityEngine.Debug.Log("FAR.OpenFARWindows():开始绘图！");
-        }
-
-        private void OnApplicationQuit()
-        {
-            FARSingleton.GetInstance().CloseDown();
         }
 
         /// <summary>
