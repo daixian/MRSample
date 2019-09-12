@@ -146,7 +146,7 @@ namespace GCSeries
             //为了与主渲染进程不产生冲突，等待下一帧结束
             yield return new WaitForEndOfFrame();
             SetCameraAccordingTo23DState(WorkingMode);
-            if (FARDll.FindWindow(null, "ViewClient") == IntPtr.Zero)
+            if (FARDll.FindWindow(null, "ClientWinCpp") == IntPtr.Zero)
             {
                 string _path = Path.Combine(Application.streamingAssetsPath, "ClientWin.exe");
                 ProcessStartInfo startInfo = new ProcessStartInfo();
