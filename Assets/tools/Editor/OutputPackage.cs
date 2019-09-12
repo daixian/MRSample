@@ -5,11 +5,11 @@ using UnityEditor;
 using UnityEngine;
 namespace GCSeries
 {
-    public class OutputPackage:Editor
+    public class OutputPackage
     {
         static string outputPath = System.IO.Directory.GetParent(Application.dataPath).FullName + "/Output";
         [MenuItem("GCSeries/Export GCSeries SDK")]
-        static void ExportGCSeries()
+        static void ExportGCSeriesPackage()
         {
             if (!Directory.Exists(outputPath))
             {

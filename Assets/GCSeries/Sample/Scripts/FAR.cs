@@ -11,23 +11,6 @@ namespace GCSeries
 {
     public class FAR : MonoBehaviour
     {
-
-        //寻找当前目标窗口的进程
-        [DllImport("user32.dll")]
-        private static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
-
-        //根据窗口句柄获取pid
-        [DllImport("User32.dll")]
-        private static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
-        [DllImport("user32.dll", SetLastError = true)]
-        public static extern long SetWindowPos(IntPtr hwnd, long hWndInsertAfter, long x, long y, long cx, long cy, long wFlags);
-        [DllImport("user32.dll")]
-        public static extern IntPtr SetWindowLongPtrA(IntPtr hwnd, int _nIndex, int dwNewLong);
-        [DllImport("user32.dll")]
-        public static extern IntPtr SetWindowLong(IntPtr hwnd, int _nIndex, int dwNewLong);
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern int MoveWindow(IntPtr hWnd, int x, int y, int nWidth, int nHeight, bool BRePaint);
-
         /// <summary>
         /// 相机采图
         /// </summary>
@@ -76,7 +59,7 @@ namespace GCSeries
             }
             //使用标定结果设置CamRoot的坐标(注意坐标需要缩放)
             transform.localPosition = viewPosition * FCore.ViewerScale;
-            transform.localRotation = viewRotation;           
+            transform.localRotation = viewRotation;
         }
 
         // Use this for initialization

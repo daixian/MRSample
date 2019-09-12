@@ -13,28 +13,28 @@ namespace GCSeries
     {
         public enum WorkMode
         {
-            _2D,
-            _3Dleftright
+            _SingleTexture,
+            _DoubleTexture
         }
 
         /// <summary>
-        /// 渲染相机
+        /// 纹理目标
         /// </summary>
         public RenderTexture renderTexture;
         public RenderTexture renderTextureL;
         public RenderTexture renderTextureR;
 
         /// <summary>
-        /// 当前投屏摄像机
+        /// 当前工作模式
         /// </summary>
-        public WorkMode WorkingMode = WorkMode._2D;
+        public WorkMode workingMode = WorkMode._SingleTexture;
         private WorkMode _lastWorkingType;
 
         /// <summary>
         /// 投屏目标显示器名
-        /// 如果为空则寻找第一个非GC显示器
+        /// 如果为空字符串则寻找第一个非GC显示器
         /// </summary>
-        public string TargetDisplayName;
+        public string targetMonitorName;
 
         /// <summary>
         /// 显示窗口句柄
@@ -48,14 +48,14 @@ namespace GCSeries
 
 
         private void Awake()
-        {         
-            _lastWorkingType = WorkingMode;
+        {
+            _lastWorkingType = workingMode;
         }
 
         void Start()
         {
             //启动投屏窗口
-            StartCoroutine(OpenFARWindows());
+            FARStartRenderingView(workingMode);
         }
 
         private void Update()
@@ -63,18 +63,18 @@ namespace GCSeries
             if (Input.GetKeyDown(KeyCode.V))
             {
                 //启动投屏窗口
-                StartCoroutine(OpenFARWindows());
+                FARStartRenderingView(WorkMode._SingleTexture);
             }
             if (Input.GetKeyDown(KeyCode.Q))
             {
                 //关闭投屏窗口
                 FARDll.CloseDown();
             }
-            if (_lastWorkingType != WorkingMode)
+            if (_lastWorkingType != workingMode)
             {
                 //切换到2D画面
-                SetCameraAccordingTo23DState(WorkingMode);
-                _lastWorkingType = WorkingMode;
+                FARStartRenderingView(workingMode);
+                _lastWorkingType = workingMode;
             }
 
             ///切换投影方式
@@ -93,9 +93,6 @@ namespace GCSeries
             }
         }
 
-        const uint SWP_SHOWWINDOW = 0x0040;//全屏
-        const int GWL_STYLE = -16;//无边框
-        const int WS_POPUP = 0x800000;
         ///通过f-ar接口读取屏幕信息后设置窗口位置
         public void UpdateWindowPos(IntPtr ProjectionWindow)
         {
@@ -115,9 +112,9 @@ namespace GCSeries
                 int result = FARDll.fmARGetMonitorInfoByIndex(ref gcinfo, k);
                 if (result >= 0)
                 {
-                    if (TargetDisplayName != "")
+                    if (targetMonitorName != string.Empty)
                     {
-                        if (gcinfo.DeviceName.Contains(TargetDisplayName))
+                        if (gcinfo.DeviceName.Contains(targetMonitorName))
                         {
                             UnityEngine.Debug.Log("Direct3DWin.UpdateWindows():投屏显示器：" + gcinfo.DeviceName);
                             FARDll.MoveWindow(ProjectionWindow, gcinfo.RCleft, gcinfo.RCtop, gcinfo.RCright - gcinfo.RCleft, gcinfo.RCbottom - gcinfo.RCtop, true);
@@ -141,11 +138,10 @@ namespace GCSeries
             UnityEngine.Debug.LogError("Direct3DWin.UpdateWindows() failed with error : 没有寻找到对应的显示器");
         }
         ///启动投屏窗口进程
-        private IEnumerator OpenFARWindows()
+        private IEnumerator CreateFARWindow(WorkMode _workmode)
         {
             //为了与主渲染进程不产生冲突，等待下一帧结束
             yield return new WaitForEndOfFrame();
-            SetCameraAccordingTo23DState(WorkingMode);
             if (FARDll.FindWindow(null, "ClientWinCpp") == IntPtr.Zero)
             {
                 string _path = Path.Combine(Application.streamingAssetsPath, "ClientWin.exe");
@@ -154,10 +150,8 @@ namespace GCSeries
                 viewProcess = new Process();
                 viewProcess.StartInfo = startInfo;
                 viewProcess.Start();
-
                 _hViewClient = IntPtr.Zero;
             }
-
             while (true)
             {
                 _hViewClient = FARDll.FindWindow(null, "ClientWinCpp");
@@ -173,12 +167,20 @@ namespace GCSeries
                         //设置当前的色彩空间，u3d默认是Gama空间
                         FARDll.SetColorSpace(FARDll.U3DColorSpace.Gama);
                         //开始绘制同屏窗口，如目标纹理指针变更可随时调用
-                        if (WorkingMode == WorkMode._2D)
-                            FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
-                        else
-                            FARDll.StartView(_hViewClient, renderTextureL.GetNativeTexturePtr(), renderTextureR.GetNativeTexturePtr());
-                        break;
+                        switch (_workmode)
+                        {
+                            case WorkMode._SingleTexture:
+                                FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
+                                break;
+                            case WorkMode._DoubleTexture:
+                                FARDll.StartView(_hViewClient, renderTextureL.GetNativeTexturePtr(), renderTextureR.GetNativeTexturePtr());
+                                break;
+                            default:
+                                FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
+                                break;
+                        }
                     }
+                    break;
                 }
             }
             UnityEngine.Debug.Log("FAR.OpenFARWindows():开始绘图！");
@@ -190,19 +192,13 @@ namespace GCSeries
             FARDll.CloseDown();
         }
 
-        public void SetCameraAccordingTo23DState(WorkMode type)
+        /// <summary>
+        /// 启动FAR投屏窗口
+        /// input WorkMode:投屏单张纹理或两张纹理
+        /// </summary>
+        public void FARStartRenderingView(WorkMode workmMode)
         {
-            bool is3D = (type == WorkMode._2D) ? false : true;
-          
-            //当摄像机更新，只需要再调用一次投屏方法，不需要重新创建投屏窗口
-            if (!is3D)
-            {
-                FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
-            }
-            else
-            {
-                FARDll.StartView(_hViewClient, renderTextureL.GetNativeTexturePtr(), renderTextureR.GetNativeTexturePtr());
-            }
+            StartCoroutine(CreateFARWindow(workmMode));
         }
     }
 }

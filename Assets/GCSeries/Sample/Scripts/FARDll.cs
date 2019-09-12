@@ -59,8 +59,10 @@ namespace GCSeries
         ///-------------------------------------------------------------------------------------------------
         [DllImport("f-ar")]
         public static extern int fmFViewReadJson();
+        //返回标定的位置信息
         [DllImport("f-ar")]
         public static extern void fmFViewGetPosition(IntPtr value);
+        //返回标定的旋转信息
         [DllImport("f-ar")]
         public static extern void fmFViewGetRotation(IntPtr value);
 
@@ -72,6 +74,7 @@ namespace GCSeries
         //根据窗口句柄获取pid
         [DllImport("User32.dll")]
         public static extern int GetWindowThreadProcessId(IntPtr hwnd, out int ID);
+        //移动窗口位置
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         public static extern int MoveWindow(IntPtr hWnd, int x, int y, int nWidth, int nHeight, bool BRePaint);
 
@@ -120,9 +123,9 @@ namespace GCSeries
         /// <summary>
         ///切换投影方式
         ///调用StartView_LR(...)后，可切换到只显示左画面到投屏窗口或左右一起显示 
-        /// -----------         ----------
-        /// |   L  |   R  |  or   |     L     | 
-        /// -----------         ---------- 
+        /// -----------       ----------
+        /// |  L |  R |  or   |   L    | 
+        /// -----------       ---------- 
         ///如果只调用StartView(...)，则此函数无效 
         /// </summary>
         public static void SwitchProjector(ProjectorType type)
@@ -137,8 +140,6 @@ namespace GCSeries
         {
             fmARStopView();
         }
-
-
 
         public const int SwapchainWidth = 1920;
         public const int SwapchanHeight = 1080;
