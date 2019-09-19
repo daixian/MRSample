@@ -63,7 +63,7 @@ namespace GCSeries
             if (Input.GetKeyDown(KeyCode.V))
             {
                 //启动投屏窗口
-                FARStartRenderingView(WorkMode._SingleTexture);
+                FARStartRenderingView(WorkMode._DoubleTexture);
             }
             if (Input.GetKeyDown(KeyCode.Q))
             {
@@ -99,9 +99,9 @@ namespace GCSeries
             //可先切换到扩展模式
             //SetDisplayConfig(0, IntPtr.Zero, 0, IntPtr.Zero, (SDC_APPLY | SDC_TOPOLOGY_EXTEND));
             //更新物理显示器列表
-            int temp_MonitorCount = FARDll.fmARUpdatePhysicalMonitor();
+            int temp_MonitorCount = FARDll.fmARGetMonitorCount();
             if (temp_MonitorCount < 0)
-                UnityEngine.Debug.LogError("Direct3DWin.UpdateWindowsPos() failed with error : fmARUpdatePhysicalMonitor " + temp_MonitorCount);
+                UnityEngine.Debug.LogError("Direct3DWin.UpdateWindowsPos() failed with error : fmARGetMonitorCount " + temp_MonitorCount);
 
             if (temp_MonitorCount != 2)
                 UnityEngine.Debug.LogError("Direct3DWin.UpdateWindows() PosCurrent monitor count : " + temp_MonitorCount);
@@ -140,8 +140,14 @@ namespace GCSeries
         ///启动投屏窗口进程
         private IEnumerator CreateFARWindow(WorkMode _workmode)
         {
+            int temp_MonitorCount = FARDll.fmARUpdatePhysicalMonitor();
+            if(temp_MonitorCount < 2)
+            {
+                UnityEngine.Debug.LogError("Direct3DWin.CreateFARWindow() failed with error : Monitor count less than 2");
+            }
             //为了与主渲染进程不产生冲突，等待下一帧结束
             yield return new WaitForEndOfFrame();
+            int result = 0;
             if (FARDll.FindWindow(null, "ClientWinCpp") == IntPtr.Zero)
             {
                 string _path = Path.Combine(Application.streamingAssetsPath, "ClientWin.exe");
@@ -170,20 +176,26 @@ namespace GCSeries
                         switch (_workmode)
                         {
                             case WorkMode._SingleTexture:
-                                FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
+                                result = FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
                                 break;
                             case WorkMode._DoubleTexture:
-                                FARDll.StartView(_hViewClient, renderTextureL.GetNativeTexturePtr(), renderTextureR.GetNativeTexturePtr());
+                                result = FARDll.StartView(_hViewClient, renderTextureL.GetNativeTexturePtr(), renderTextureR.GetNativeTexturePtr());
                                 break;
                             default:
-                                FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
+                                result = FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
                                 break;
                         }
                     }
                     break;
                 }
             }
-            UnityEngine.Debug.Log("FAR.OpenFARWindows():开始绘图！");
+            if (result < 0)
+            {
+                UnityEngine.Debug.LogError("FAR.OpenFARWindows():投屏启动失败" + result);
+                FARDll.CloseDown();
+            }
+            else
+                UnityEngine.Debug.Log("FAR.OpenFARWindows():开始绘图！");
         }
 
         private void OnApplicationQuit()
@@ -195,6 +207,10 @@ namespace GCSeries
         /// <summary>
         /// 启动FAR投屏窗口
         /// input WorkMode:投屏单张纹理或两张纹理
+        /// errorCode >0 成功
+        /// errorCode ==-2 窗口句柄丢失
+        /// errorCode ==-3 纹理句柄丢失
+        /// errorCode ==-4 渲染设备初始化失败
         /// </summary>
         public void FARStartRenderingView(WorkMode workmMode)
         {

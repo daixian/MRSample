@@ -97,6 +97,7 @@ namespace GCSeries
         /// errorCode >0 成功
         /// errorCode ==-2 窗口句柄丢失
         /// errorCode ==-3 纹理句柄丢失
+        /// errorCode ==-4 渲染设备初始化失败
         /// </summary>
         public static int StartView(IntPtr hWnd, IntPtr leftNativePTR, IntPtr rightNativePTR)
         {
