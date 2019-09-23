@@ -11,6 +11,9 @@ namespace GCSeries
 {
     public class Direct3DWin : MonoBehaviour
     {
+        /// <summary>
+        /// 投屏到一张纹理或两张纹理
+        /// </summary>
         public enum WorkMode
         {
             _SingleTexture,
@@ -78,11 +81,6 @@ namespace GCSeries
             }
 
             ///切换投影方式
-            ///调用StartView_LR(...)后，可切换到只显示左画面到投屏窗口或左右一起显示 
-            /// -----------      ----------
-            /// |  L |  R |  or  |    L   | 
-            /// -----------      ---------- 
-            /// 如果只调用StartView(...)，则此函数无效 
             if (Input.GetKeyDown(KeyCode.K))
             {
                 FARDll.SwitchProjector(FARDll.ProjectorType._2D);
@@ -92,9 +90,11 @@ namespace GCSeries
                 FARDll.SwitchProjector(FARDll.ProjectorType.LeftRight);
             }
         }
-
+        ///<summary>
         ///通过f-ar接口读取屏幕信息后设置窗口位置
-        public void UpdateWindowPos(IntPtr ProjectionWindow)
+        ///</summary>
+        ///<param name="farwin">投屏窗口句柄</param>
+        public void UpdateWindowPos(IntPtr farwin)
         {
             //可先切换到扩展模式
             //SetDisplayConfig(0, IntPtr.Zero, 0, IntPtr.Zero, (SDC_APPLY | SDC_TOPOLOGY_EXTEND));
@@ -117,7 +117,7 @@ namespace GCSeries
                         if (gcinfo.DeviceName.Contains(targetMonitorName))
                         {
                             UnityEngine.Debug.Log("Direct3DWin.UpdateWindows():投屏显示器：" + gcinfo.DeviceName);
-                            FARDll.MoveWindow(ProjectionWindow, gcinfo.RCleft, gcinfo.RCtop, gcinfo.RCright - gcinfo.RCleft, gcinfo.RCbottom - gcinfo.RCtop, true);
+                            FARDll.MoveWindow(farwin, gcinfo.RCleft, gcinfo.RCtop, gcinfo.RCright - gcinfo.RCleft, gcinfo.RCbottom - gcinfo.RCtop, true);
                             return;
                         }
                     }
@@ -127,7 +127,7 @@ namespace GCSeries
                         if (!gcinfo.isGCmonitor)
                         {
                             UnityEngine.Debug.Log("Direct3DWin.UpdateWindows():投屏显示器：" + gcinfo.DeviceName);
-                            FARDll.MoveWindow(ProjectionWindow, gcinfo.RCleft, gcinfo.RCtop, gcinfo.RCright - gcinfo.RCleft, gcinfo.RCbottom - gcinfo.RCtop, true);
+                            FARDll.MoveWindow(farwin, gcinfo.RCleft, gcinfo.RCtop, gcinfo.RCright - gcinfo.RCleft, gcinfo.RCbottom - gcinfo.RCtop, true);
                             return;
                         }
                     }
@@ -176,7 +176,7 @@ namespace GCSeries
                         switch (_workmode)
                         {
                             case WorkMode._SingleTexture:
-                                result = FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
+                                result = FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(),IntPtr.Zero);
                                 break;
                             case WorkMode._DoubleTexture:
                                 result = FARDll.StartView(_hViewClient, renderTextureL.GetNativeTexturePtr(), renderTextureR.GetNativeTexturePtr());
@@ -206,12 +206,12 @@ namespace GCSeries
 
         /// <summary>
         /// 启动FAR投屏窗口
-        /// input WorkMode:投屏单张纹理或两张纹理
         /// errorCode >0 成功
         /// errorCode ==-2 窗口句柄丢失
         /// errorCode ==-3 纹理句柄丢失
         /// errorCode ==-4 渲染设备初始化失败
         /// </summary>
+        /// <param name="workmMode">投屏单张纹理或两张纹理</param>
         public void FARStartRenderingView(WorkMode workmMode)
         {
             StartCoroutine(CreateFARWindow(workmMode));
