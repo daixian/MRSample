@@ -49,7 +49,48 @@ namespace GCSeries
         /// </summary>
         Process viewProcess;
 
-
+        /// <summary>
+        /// 投屏状态值
+        /// </summary>
+        public enum FAR_Status
+        {
+            /// <summary>
+            /// 成功
+            /// </summary>
+            FAR_Ok = 1,
+            /// <summary>
+            /// 没被初始化或正在初始化中
+            /// </summary>
+            FAR_NotInitialized = 0,
+            /// <summary>
+            /// 非法硬件设备
+            /// </summary>
+            FAR_Illegal = -1,
+            /// <summary>
+            /// 窗口句柄丢失
+            /// </summary>
+            FAR_InvaliHwndHandle = -2,
+            /// <summary>
+            /// 渲染设备初始化失败
+            /// </summary>
+            FAR_D3DFailed = -3,
+            /// <summary>
+            /// 纹理句柄丢失
+            /// </summary>
+            FAR_InvaliTexturedHandle = -4,
+            /// <summary>
+            /// 渲染等待进程超时
+            /// </summary>
+            FAR_Timeout = -5,
+            /// <summary>
+            /// windows版本低于win10
+            /// </summary>
+            FAR_SysNnotSupported = -6
+        }
+        /// <summary>
+        /// 投屏状态值
+        /// </summary>
+        FAR_Status status = FAR_Status.FAR_NotInitialized;
         private void Awake()
         {
             _lastWorkingType = workingMode;
@@ -147,7 +188,7 @@ namespace GCSeries
             }
             //为了与主渲染进程不产生冲突，等待下一帧结束
             yield return new WaitForEndOfFrame();
-            int result = 0;
+            
             if (FARDll.FindWindow(null, "ClientWinCpp") == IntPtr.Zero)
             {
                 string _path = Path.Combine(Application.streamingAssetsPath, "ClientWin.exe");
@@ -163,7 +204,7 @@ namespace GCSeries
                 _hViewClient = FARDll.FindWindow(null, "ClientWinCpp");
                 if (_hViewClient != IntPtr.Zero)
                 {
-                    UnityEngine.Debug.Log("FAR.OpenFARWindows():找到了窗口句柄！");
+                    UnityEngine.Debug.Log("FAR.CreateFARWindow():找到了窗口句柄！");
                     //全屏到非GC显示器
                     UpdateWindowPos(_hViewClient);
                     int pid = 0;
@@ -176,26 +217,26 @@ namespace GCSeries
                         switch (_workmode)
                         {
                             case WorkMode._SingleTexture:
-                                result = FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(),IntPtr.Zero);
+                                status = (FAR_Status)FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(),IntPtr.Zero);
                                 break;
                             case WorkMode._DoubleTexture:
-                                result = FARDll.StartView(_hViewClient, renderTextureL.GetNativeTexturePtr(), renderTextureR.GetNativeTexturePtr());
+                                status = (FAR_Status)FARDll.StartView(_hViewClient, renderTextureL.GetNativeTexturePtr(), renderTextureR.GetNativeTexturePtr());
                                 break;
                             default:
-                                result = FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
+                                status = (FAR_Status)FARDll.StartView(_hViewClient, renderTexture.GetNativeTexturePtr(), IntPtr.Zero);
                                 break;
                         }
                     }
                     break;
                 }
             }
-            if (result < 0)
+            if (status < 0)
             {
-                UnityEngine.Debug.LogError("FAR.OpenFARWindows():投屏启动失败" + result);
+                UnityEngine.Debug.LogError("FAR.CreateFARWindow():投屏启动失败" + status);
                 FARDll.CloseDown();
             }
             else
-                UnityEngine.Debug.Log("FAR.OpenFARWindows():开始绘图！");
+                UnityEngine.Debug.Log("FAR.CreateFARWindow():开始绘图！");
         }
 
         private void OnApplicationQuit()
@@ -206,10 +247,6 @@ namespace GCSeries
 
         /// <summary>
         /// 启动FAR投屏窗口
-        /// errorCode >0 成功
-        /// errorCode ==-2 窗口句柄丢失
-        /// errorCode ==-3 纹理句柄丢失
-        /// errorCode ==-4 渲染设备初始化失败
         /// </summary>
         /// <param name="workmMode">投屏单张纹理或两张纹理</param>
         public void FARStartRenderingView(WorkMode workmMode)

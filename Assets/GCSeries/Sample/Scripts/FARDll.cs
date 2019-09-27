@@ -134,6 +134,7 @@ namespace GCSeries
         /// <returns>
         ///  返回错误代码
         /// errorCode >0 成功
+        /// errorCode ==-1 不在自己的机器上
         /// errorCode ==-2 窗口句柄丢失
         /// errorCode ==-3 纹理句柄丢失
         /// errorCode ==-4 渲染设备初始化失败
